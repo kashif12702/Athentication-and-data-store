@@ -9,6 +9,8 @@ import { collection, addDoc } from "firebase/firestore";
 import { getFirestore } from "firebase/firestore";
 import { getDocs } from "firebase/firestore";
 import Spinner from "./Spinner";
+import { doc, deleteDoc } from "firebase/firestore";
+
 
 function App() {
 
@@ -25,6 +27,7 @@ function App() {
   const [googleimage, setgoogleimage] = useState("");
   const [signinloader, setsigninloader] = useState(false);
 
+  const [id, setid] = useState("")
   const [carloader, setcarloader] = useState(false);
   const [carerror, setcarerror] = useState("");
   const [data, setdata] = useState([]);
@@ -42,6 +45,10 @@ function App() {
   };
 
 
+  const generateKey = (pre) => {
+    return `${ pre }_${ new Date().getTime() }`;
+}
+
 // ------------Datasaving_Datareteriving-------------------
 
   const savedata = async (event) => {
@@ -51,13 +58,15 @@ function App() {
     } else {
       try {
         setcarloader(true);
-       await addDoc(collection(db, "cars"), car);
+        const querySnapshot =  await addDoc(collection(db, "cars"), car);
         setcarloader(false);
         setcarerror("your data is successfully saved");
         setcar({
           name: "",
           color: "",
         });
+        console.log(querySnapshot.id)
+
       } catch (e) {
         setcarerror(e);
       }
@@ -74,10 +83,21 @@ function App() {
     querySnapshot.forEach((doc) => {
       items.push(doc.data());
       setdata(items);
+      console.log(doc.id, " => ", doc.data());
     });
   };
 
+ const deletedata = async(event) =>{
+  event.preventDefault();
+  setcarloader(true);
 
+  await deleteDoc(doc(db, "cars", id));
+  setcarloader(false);
+
+  setid("");
+  setcarerror("deleted");
+
+ }
 
 
 // ------------signin_signout_signup_Googlesignin-------------------
@@ -162,6 +182,8 @@ function App() {
 
   return (
     <>
+{/* ------------Login form---------------- */}
+
       <form className="container mt-4 w-50 bg-dark text-white p-4">
         <div className="mb-3 ">
           <label htmlFor="exampleInputEmail1" className="form-label">
@@ -214,6 +236,7 @@ function App() {
           <img className="m-2 rounded" src={googleimage} alt="" />
         </div>
       </form>
+{/* ------------cars data---------------- */}
 
       <form className="container mt-4 w-50 bg-dark text-white p-4">
         <h2 className="text-center fs-1 mb-3">Car Details</h2>
@@ -262,9 +285,28 @@ function App() {
         </span>
         <span className="mx-4 ">{carloader && <Spinner />}</span>
 
+{/* ------------delete using key---------------- */}
+        <input
+            required
+            name="color"
+            type="text"
+            value={id}
+            onChange={(event)=>setid(event.target.value)}
+            className="form-control m-2"
+            placeholder="Id"
+          />
+        <button
+            type="submit"
+            onClick={deletedata}
+            className="btn btn-primary m-2"
+          >
+            Delete
+        </button>
+
         <div id="emailHelp" className="text-success m-2">
           {carerror}
         </div>
+{/* -------------------Saves data------------------- */}
 
         <div className="m-4">
           <h2 className="fs-2 text-center my-4">Our Data</h2>
@@ -277,9 +319,8 @@ function App() {
             </thead>
             <tbody>
               {data.map((i) => {
-                const uniquekey = new Date().getMilliseconds().toString;
                 return (
-                  <tr key={uniquekey}>
+                  <tr key={ generateKey(i.name) }>
                     <td className="p-3 fs-4 border border-info">{i.name}</td>
                     <td className="p-3 border border-info">{i.color}</td>
                   </tr>
