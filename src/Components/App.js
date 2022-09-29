@@ -83,6 +83,7 @@ function App() {
     querySnapshot.forEach((doc) => {
       items.push(doc.data());
       setdata(items);
+      
       console.log(doc.id, " => ", doc.data());
     });
   };
@@ -95,7 +96,7 @@ function App() {
   setcarloader(false);
 
   setid("");
-  setcarerror("deleted");
+  setcarerror("Data deleted!");
 
  }
 
@@ -283,18 +284,20 @@ function App() {
             Show all data
           </button>
         </span>
-        <span className="mx-4 ">{carloader && <Spinner />}</span>
+    
 
 {/* ------------delete using key---------------- */}
+<hr/>
         <input
             required
             name="color"
             type="text"
             value={id}
             onChange={(event)=>setid(event.target.value)}
-            className="form-control m-2"
+            className="form-control my-2"
             placeholder="Id"
           />
+          <div className="text-secondary mx-2"> Grap the id from console 😉</div>
         <button
             type="submit"
             onClick={deletedata}
@@ -303,9 +306,11 @@ function App() {
             Delete
         </button>
 
-        <div id="emailHelp" className="text-success m-2">
+<hr/>
+        <span id="emailHelp" className="text-success m-2">
           {carerror}
-        </div>
+        </span>
+        <span className="mx-4 ">{carloader && <Spinner />}</span>
 {/* -------------------Saves data------------------- */}
 
         <div className="m-4">
